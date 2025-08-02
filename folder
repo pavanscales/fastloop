@@ -1,0 +1,29 @@
+worlds-fastest-event-loop/
+├── .github/
+│   └── workflows/
+│       └── ci.yml                # ✅ Lint, test, build — trust & automation
+├── benches/
+│   └── ping_pong.rs             # ✅ Criterion-based latency benchmark
+├── examples/
+│   └── echo.rs                  # ✅ Real-world echo server
+│   └── http.rs                  # ✅ Simple HTTP server demo
+├── scripts/
+│   └── flamegraph.sh            # ✅ Auto-profiling with cargo-flamegraph
+│   └── compare.sh               # ✅ Compare against Bun/Node/Tokio
+├── src/
+│   ├── lib.rs                   # ✅ Crate entry & API
+│   ├── reactor.rs               # ✅ Core event loop logic (poll/select/epoll)
+│   ├── poller.rs                # ✅ Abstract OS backend (kqueue, epoll, IOCP)
+│   ├── io.rs                    # ✅ Non-blocking TCP/UDP IO
+│   ├── timer.rs                 # ✅ High-performance timer wheel
+│   ├── task.rs                  # ✅ Simple task system (async/futures)
+│   ├── waker.rs                 # ✅ Custom Waker impl for zero overhead
+│   └── syscall.rs               # ✅ Raw syscall interfaces (linux only)
+├── tests/
+│   └── stress.rs                # ✅ Integration and stress test suite
+├── Cargo.toml                   # ✅ Crate metadata, deps, features
+├── Makefile                     # ✅ Easy DX: make run, make bench
+├── benchmarks.md                # ✅ Public perf results + graphs
+├── README.md                    # ✅ Usage, examples, memes, performance shock
+├── LICENSE                      # ✅ MIT or Apache-2.0
+└── target/   in thsi fodler whic file hosudl code next brohe aoky
