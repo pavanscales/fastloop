@@ -1,4 +1,5 @@
-//! Non-blocking TCP I/O built on mio, integrated with fastloop reactor.
+//! ⚡ World-Class TCP I/O with Edge-Triggered Polling & Zero Allocation
+//! Built for ultra-low-latency fastloop reactor.
 
 use std::{
     io::{self, Read, Write},
@@ -24,6 +25,7 @@ pub struct FastSocket {
 
 impl FastSocket {
     /// Connects to a remote address using non-blocking socket.
+    #[inline(always)]
     pub fn connect(addr: SocketAddr, reactor: Arc<Reactor>) -> io::Result<Self> {
         let mut stream = TcpStream::connect(addr)?;
         stream.set_nonblocking(true)?;
@@ -34,7 +36,7 @@ impl FastSocket {
         })
     }
 
-    /// Registers this socket with the reactor and interest (read/write).
+    /// Registers the socket with the reactor using EDGE-TRIGGERED mode.
     pub fn register(&mut self, interest: Interest, waker: Waker) -> io::Result<()> {
         let token = self.reactor.register_waker(waker);
         self.reactor
@@ -45,7 +47,8 @@ impl FastSocket {
         Ok(())
     }
 
-    /// Reregisters this socket to modify interest (e.g. switching between read/write).
+    /// Reregisters the socket to change interest.
+    #[inline(always)]
     pub fn reregister(&mut self, interest: Interest) -> io::Result<()> {
         if let Some(token) = self.token {
             self.reactor
@@ -57,6 +60,7 @@ impl FastSocket {
     }
 
     /// Deregisters this socket from the reactor.
+    #[inline(always)]
     pub fn deregister(&mut self) -> io::Result<()> {
         self.reactor.poller().registry().deregister(&mut self.stream)?;
         if let Some(token) = self.token.take() {
@@ -65,17 +69,20 @@ impl FastSocket {
         Ok(())
     }
 
-    /// Attempts to read into the provided buffer.
+    /// Attempts to read into the provided buffer. Use in a loop until WouldBlock.
+    #[inline(always)]
     pub fn try_read(&mut self, buf: &mut [u8]) -> io::Result<usize> {
         self.stream.read(buf)
     }
 
-    /// Attempts to write the provided buffer to the stream.
+    /// Attempts to write buffer to stream. Use in a loop until WouldBlock.
+    #[inline(always)]
     pub fn try_write(&mut self, buf: &[u8]) -> io::Result<usize> {
         self.stream.write(buf)
     }
 
-    /// Returns reference to raw mio stream.
+    /// Access raw mio stream.
+    #[inline(always)]
     pub fn raw(&self) -> &TcpStream {
         &self.stream
     }
@@ -89,7 +96,8 @@ pub struct FastListener {
 }
 
 impl FastListener {
-    /// Binds a non-blocking TCP listener to the given address.
+    /// Binds to a TCP address using non-blocking mode.
+    #[inline(always)]
     pub fn bind(addr: SocketAddr, reactor: Arc<Reactor>) -> io::Result<Self> {
         let listener = TcpListener::bind(addr)?;
         listener.set_nonblocking(true)?;
@@ -100,7 +108,7 @@ impl FastListener {
         })
     }
 
-    /// Registers the listener with the reactor for accept readiness.
+    /// Registers with reactor using edge-triggered read interest.
     pub fn register(&mut self, waker: Waker) -> io::Result<()> {
         let token = self.reactor.register_waker(waker);
         self.reactor
@@ -111,19 +119,18 @@ impl FastListener {
         Ok(())
     }
 
-    /// Deregisters the listener from the reactor.
+    /// Deregisters the listener.
+    #[inline(always)]
     pub fn deregister(&mut self) -> io::Result<()> {
-        self.reactor
-            .poller()
-            .registry()
-            .deregister(&mut self.listener)?;
+        self.reactor.poller().registry().deregister(&mut self.listener)?;
         if let Some(token) = self.token.take() {
             self.reactor.deregister(token);
         }
         Ok(())
     }
 
-    /// Attempts to accept a new client connection.
+    /// Accepts as many connections as available (use in loop).
+    #[inline(always)]
     pub fn try_accept(&mut self) -> io::Result<(FastSocket, SocketAddr)> {
         let (mut stream, addr) = self.listener.accept()?;
         stream.set_nonblocking(true)?;
@@ -137,7 +144,8 @@ impl FastListener {
         ))
     }
 
-    /// Returns reference to raw mio listener.
+    /// Access raw mio listener.
+    #[inline(always)]
     pub fn raw(&self) -> &TcpListener {
         &self.listener
     }
